@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password}
+      POSTGRES_DB: guardmetrics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-your_secure_password}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-your_secure_password}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - postgres
+
+  guardmetrics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+      - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=guardmetrics;Username=postgres;Password=${POSTGRES_PASSWORD:-your_secure_password}
+      - ConnectionStrings__Redis=redis:6379,password=${REDIS_PASSWORD:-your_secure_password}
+      - ConnectionStrings__HangfireConnection=Host=postgres;Database=guardmetrics_hangfire;Username=postgres;Password=${POSTGRES_PASSWORD:-your_secure_password}
+      - JWT__Secret=${JWT_SECRET:-your_jwt_secret_key_minimum_16_chars}
+      - JWT__ValidIssuer=http://localhost:5000
+      - JWT__ValidAudience=http://localhost:4200
+      - VirusTotal__ApiKey=${VIRUSTOTAL_API_KEY:-02852f4c4b4e046c859634fedb75617ad5ab0157a8b0cf94825c27b0bfa6b417}
+      - VirusTotal__ApiUrl=https://www.virustotal.com/vtapi/v2
+      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN:-6782495011:AAG_fEsMcW-hv4G3RO50QvXJrx01VWMHJ_8}
+      - Telegram__ChatId=${TELEGRAM_CHAT_ID:-1628591115}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+  redis_data:
+  grafana_data: 

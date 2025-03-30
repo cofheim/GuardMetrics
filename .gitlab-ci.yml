@@ -1,0 +1,78 @@
+image: mcr.microsoft.com/dotnet/sdk:6.0
+
+stages:
+  - build
+  - test
+  - analyze
+  - publish
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: your-registry.azurecr.io
+  APP_NAME: guardmetrics
+
+before_script:
+  - dotnet restore
+
+build:
+  stage: build
+  script:
+    - dotnet build --no-restore
+  artifacts:
+    paths:
+      - bin/
+      - obj/
+
+test:
+  stage: test
+  script:
+    - dotnet test --no-restore
+
+code_quality:
+  stage: analyze
+  script:
+    - dotnet tool install --global dotnet-sonarscanner
+    - dotnet sonarscanner begin /k:"$APP_NAME" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.login="$SONAR_TOKEN"
+    - dotnet build --no-restore
+    - dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
+  only:
+    - main
+    - develop
+
+publish:
+  stage: publish
+  script:
+    - docker build -t $DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA .
+    - docker tag $DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA $DOCKER_REGISTRY/$APP_NAME:latest
+    - docker login $DOCKER_REGISTRY -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - docker push $DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$APP_NAME:latest
+  only:
+    - main
+
+deploy_staging:
+  stage: deploy
+  script:
+    - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
+    - kubectl config set-credentials admin --token="$KUBE_TOKEN"
+    - kubectl config set-context default --cluster=k8s --user=admin
+    - kubectl config use-context default
+    - helm upgrade --install $APP_NAME ./helm --namespace staging --set image.tag=$CI_COMMIT_SHA
+  environment:
+    name: staging
+  only:
+    - develop
+
+deploy_production:
+  stage: deploy
+  script:
+    - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
+    - kubectl config set-credentials admin --token="$KUBE_TOKEN"
+    - kubectl config set-context default --cluster=k8s --user=admin
+    - kubectl config use-context default
+    - helm upgrade --install $APP_NAME ./helm --namespace production --set image.tag=$CI_COMMIT_SHA
+  environment:
+    name: production
+  when: manual
+  only:
+    - main 

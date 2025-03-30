@@ -1,0 +1,119 @@
+replicaCount: 1
+
+image:
+  repository: guardmetrics
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  ASPNETCORE_ENVIRONMENT: Production
+  
+secrets:
+  jwt:
+    secretKey: ""
+    validIssuer: "http://localhost:5000"
+    validAudience: "http://localhost:4200"
+  
+  postgres:
+    host: "postgres-postgresql"
+    database: "guardmetrics"
+    user: "postgres"
+    password: ""
+  
+  redis:
+    host: "redis-master"
+    port: "6379"
+    password: ""
+  
+  virustotal:
+    apiKey: ""
+    apiUrl: "https://www.virustotal.com/vtapi/v2"
+  
+  telegram:
+    botToken: ""
+    chatId: ""
+
+postgresql:
+  enabled: true
+  auth:
+    database: guardmetrics
+    username: postgres
+    password: ""
+  
+redis:
+  enabled: true
+  auth:
+    password: ""
+
+metrics:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 15s
+    scrapeTimeout: 14s
+
+serilog:
+  minimumLevel:
+    default: "Information"
+    override:
+      Microsoft: "Warning"
+      System: "Warning"
+  enrich:
+    - "FromLogContext"
+    - "WithMachineName"
+    - "WithThreadId"
+  writeTo:
+    - name: "Console"
+    - name: "File"
+      args:
+        rollingInterval: "Day" 

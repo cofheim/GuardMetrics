@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "guardmetrics.fullname" . }}
+  labels:
+    {{- include "guardmetrics.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "guardmetrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "guardmetrics.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "guardmetrics.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: logs
+          emptyDir: {}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.env.ASPNETCORE_ENVIRONMENT }}
+            - name: ConnectionStrings__DefaultConnection
+              value: "Host={{ .Values.secrets.postgres.host }};Database={{ .Values.secrets.postgres.database }};Username={{ .Values.secrets.postgres.user }};Password=$(POSTGRES_PASSWORD)"
+            - name: ConnectionStrings__Redis
+              value: "{{ .Values.secrets.redis.host }}:{{ .Values.secrets.redis.port }},password=$(REDIS_PASSWORD)"
+            - name: ConnectionStrings__HangfireConnection
+              value: "Host={{ .Values.secrets.postgres.host }};Database={{ .Values.secrets.postgres.database }}_hangfire;Username={{ .Values.secrets.postgres.user }};Password=$(POSTGRES_PASSWORD)"
+            - name: JWT__ValidIssuer
+              value: {{ .Values.secrets.jwt.validIssuer }}
+            - name: JWT__ValidAudience
+              value: {{ .Values.secrets.jwt.validAudience }}
+            - name: JWT__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "guardmetrics.fullname" . }}-jwt
+                  key: secret-key
+            - name: VirusTotal__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "guardmetrics.fullname" . }}-virustotal
+                  key: api-key
+            - name: VirusTotal__ApiUrl
+              value: {{ .Values.secrets.virustotal.apiUrl | default "https://www.virustotal.com/vtapi/v2" }}
+            - name: Telegram__BotToken
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "guardmetrics.fullname" . }}-telegram
+                  key: bot-token
+            - name: Telegram__ChatId
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "guardmetrics.fullname" . }}-telegram
+                  key: chat-id
+            - name: Serilog__WriteTo__1__Args__path
+              value: "/app/logs/log-.txt"
+          envFrom:
+            - secretRef:
+                name: {{ include "guardmetrics.fullname" . }}-secrets
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 
