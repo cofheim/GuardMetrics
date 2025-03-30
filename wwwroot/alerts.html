@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оповещения - GuardMetrics</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-check"></i> GuardMetrics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Панель управления</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/metrics">Метрики</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/alerts">Оповещения</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="/api/docs" class="btn btn-outline-light me-2">API Docs</a>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> Admin
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Профиль</a></li>
+                            <li><a class="dropdown-item" href="/settings"><i class="bi bi-gear"></i> Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Выход</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1>Оповещения</h1>
+                <p class="lead text-muted">Уведомления о потенциальных угрозах и проблемах безопасности</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group mb-2 me-2">
+                    <button type="button" class="btn btn-outline-primary active" id="filter-all">Все</button>
+                    <button type="button" class="btn btn-outline-danger" id="filter-high">Высокий риск</button>
+                    <button type="button" class="btn btn-outline-warning" id="filter-medium">Средний риск</button>
+                    <button type="button" class="btn btn-outline-info" id="filter-low">Низкий риск</button>
+                </div>
+                <button class="btn btn-primary" id="markAllRead">
+                    <i class="bi bi-check-all"></i> Отметить все как прочитанные
+                </button>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Последние оповещения</h3>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="alertsTimeRange" data-bs-toggle="dropdown" aria-expanded="false">
+                        За последние 7 дней
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="alertsTimeRange">
+                        <li><a class="dropdown-item" href="#">За сегодня</a></li>
+                        <li><a class="dropdown-item active" href="#">За последние 7 дней</a></li>
+                        <li><a class="dropdown-item" href="#">За последние 30 дней</a></li>
+                        <li><a class="dropdown-item" href="#">За все время</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="list-group">
+                <!-- Высокий риск -->
+                <div class="list-group-item list-group-item-action border-danger border-start border-4 unread">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 d-flex align-items-center">
+                            <span class="badge bg-danger me-2">Высокий риск</span>
+                            <i class="bi bi-bug text-danger me-2"></i>
+                            Обнаружен вредоносный файл
+                        </h5>
+                        <div>
+                            <small class="text-muted">2 часа назад</small>
+                            <span class="ms-2 badge bg-primary rounded-pill">Новый</span>
+                        </div>
+                    </div>
+                    <p class="mb-1">Процесс malware.exe (PID: 1876) идентифицирован как вредоносное ПО типа "троян". Обнаружено 12 положительных результатов из 58 через VirusTotal API.</p>
+                    <div class="mt-2">
+                        <small class="text-muted">Хеш файла: 8f42c4a19d5d84e082e9a152e8e36477a27978a3</small>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Удалить файл
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Подробности
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-2 mark-read">
+                            <i class="bi bi-check2"></i> Отметить как прочитанное
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Средний риск -->
+                <div class="list-group-item list-group-item-action border-warning border-start border-4 unread">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 d-flex align-items-center">
+                            <span class="badge bg-warning text-dark me-2">Средний риск</span>
+                            <i class="bi bi-globe text-warning me-2"></i>
+                            Подозрительное сетевое соединение
+                        </h5>
+                        <div>
+                            <small class="text-muted">4 часа назад</small>
+                            <span class="ms-2 badge bg-primary rounded-pill">Новый</span>
+                        </div>
+                    </div>
+                    <p class="mb-1">Обнаружено соединение с подозрительным IP-адресом 185.212.56.52:8080 через процесс unknown.exe (PID: 1876). Адрес может быть связан с C&C-серверами.</p>
+                    <div class="mt-2">
+                        <small class="text-muted">Локальный порт: 62134, Протокол: TCP, Состояние: ESTABLISHED</small>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-x-circle"></i> Разорвать соединение
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Подробности
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-2 mark-read">
+                            <i class="bi bi-check2"></i> Отметить как прочитанное
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Низкий риск -->
+                <div class="list-group-item list-group-item-action border-info border-start border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 d-flex align-items-center">
+                            <span class="badge bg-info me-2">Низкий риск</span>
+                            <i class="bi bi-cpu text-info me-2"></i>
+                            Аномальное использование CPU
+                        </h5>
+                        <small class="text-muted">8 часов назад</small>
+                    </div>
+                    <p class="mb-1">Процесс explorer.exe (PID: 872) показывает необычно высокое использование CPU (45%) в течение последних 20 минут. Это может указывать на аномальное поведение.</p>
+                    <div class="mt-2">
+                        <small class="text-muted">Средний показатель CPU: 5%, Текущий показатель: 45%</small>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-arrow-clockwise"></i> Перезапустить процесс
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Подробности
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Низкий риск -->
+                <div class="list-group-item list-group-item-action border-info border-start border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 d-flex align-items-center">
+                            <span class="badge bg-info me-2">Низкий риск</span>
+                            <i class="bi bi-hdd text-info me-2"></i>
+                            Изменение системных файлов
+                        </h5>
+                        <small class="text-muted">Вчера, 15:42</small>
+                    </div>
+                    <p class="mb-1">Обнаружены изменения в системных файлах, внесенные процессом svchost.exe (PID: 652). Измененные файлы могут быть результатом обновления системы.</p>
+                    <div class="mt-2">
+                        <small class="text-muted">Изменено файлов: 15, Подозрительных изменений: 0</small>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-box-arrow-up-right"></i> Подробности
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Средний риск -->
+                <div class="list-group-item list-group-item-action border-warning border-start border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 d-flex align-items-center">
+                            <span class="badge bg-warning text-dark me-2">Средний риск</span>
+                            <i class="bi bi-shield-exclamation text-warning me-2"></i>
+                            Отключен фаервол
+                        </h5>
+                        <small class="text-muted">2 дня назад</small>
+                    </div>
+                    <p class="mb-1">Системный фаервол был отключен процессом system (PID: 4). Это может быть результатом действий пользователя или вредоносной активности.</p>
+                    <div class="mt-2">
+                        <small class="text-muted">Время события: 28.03.2025, 09:15:22</small>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-shield-check"></i> Включить фаервол
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Подробности
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Предыдущая</a>
+                        </li>
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Следующая</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <div class="dashboard-container mt-4">
+            <h3 class="mb-4">Настройки оповещений</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Каналы оповещений</h5>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="telegramNotifications" checked>
+                        <label class="form-check-label" for="telegramNotifications">Telegram</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                        <label class="form-check-label" for="emailNotifications">Email</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="smsNotifications">
+                        <label class="form-check-label" for="smsNotifications">SMS</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="webNotifications" checked>
+                        <label class="form-check-label" for="webNotifications">Веб-уведомления</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Уровни оповещений</h5>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="highPriorityAlerts" checked>
+                        <label class="form-check-label" for="highPriorityAlerts">Высокий приоритет</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="mediumPriorityAlerts" checked>
+                        <label class="form-check-label" for="mediumPriorityAlerts">Средний приоритет</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="lowPriorityAlerts">
+                        <label class="form-check-label" for="lowPriorityAlerts">Низкий приоритет</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="infoAlerts">
+                        <label class="form-check-label" for="infoAlerts">Информационные</label>
+                    </div>
+                </div>
+            </div>
+            <div class="text-end mt-3">
+                <button class="btn btn-primary" id="saveAlertSettings">Сохранить настройки</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="bi bi-shield-check"></i> GuardMetrics</h5>
+                    <p>Интеллектуальная система мониторинга безопасности с использованием ML и VirusTotal API</p>
+                </div>
+                <div class="col-md-2">
+                    <h5>Ссылки</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/">Главная</a></li>
+                        <li><a href="/dashboard">Панель управления</a></li>
+                        <li><a href="/metrics">Метрики</a></li>
+                        <li><a href="/alerts">Оповещения</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h5>Ресурсы</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/docs">Документация</a></li>
+                        <li><a href="/api/docs">API</a></li>
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/support">Поддержка</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Подпишитесь на новости</h5>
+                    <p>Получайте обновления о новых функциях и улучшениях безопасности</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Email">
+                            <button class="btn btn-primary" type="submit">Подписаться</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; 2025 GuardMetrics. Все права защищены.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><a href="/privacy">Политика конфиденциальности</a></li>
+                        <li class="list-inline-item"><a href="/terms">Условия использования</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Функциональность фильтров
+            const filterButtons = document.querySelectorAll('#filter-all, #filter-high, #filter-medium, #filter-low');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Убираем активный класс со всех кнопок
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Добавляем активный класс текущей кнопке
+                    this.classList.add('active');
+                    
+                    // Тут был бы код для фильтрации уведомлений
+                    const filterId = this.id;
+                    
+                    // Демонстрационная реализация фильтрации
+                    if (filterId === 'filter-all') {
+                        document.querySelectorAll('.list-group-item').forEach(item => {
+                            item.style.display = 'block';
+                        });
+                    } else if (filterId === 'filter-high') {
+                        document.querySelectorAll('.list-group-item').forEach(item => {
+                            if (item.querySelector('.badge.bg-danger')) {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    } else if (filterId === 'filter-medium') {
+                        document.querySelectorAll('.list-group-item').forEach(item => {
+                            if (item.querySelector('.badge.bg-warning')) {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    } else if (filterId === 'filter-low') {
+                        document.querySelectorAll('.list-group-item').forEach(item => {
+                            if (item.querySelector('.badge.bg-info')) {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Кнопки "Отметить как прочитанное"
+            document.querySelectorAll('.mark-read').forEach(button => {
+                button.addEventListener('click', function() {
+                    const alertItem = this.closest('.list-group-item');
+                    alertItem.classList.remove('unread');
+                    
+                    // Удаляем бейдж "Новый"
+                    const newBadge = alertItem.querySelector('.badge.bg-primary');
+                    if (newBadge) {
+                        newBadge.remove();
+                    }
+                    
+                    // Меняем текст кнопки
+                    this.innerHTML = '<i class="bi bi-check2-all"></i> Прочитано';
+                    this.disabled = true;
+                });
+            });
+            
+            // Кнопка "Отметить все как прочитанные"
+            document.getElementById('markAllRead').addEventListener('click', function() {
+                document.querySelectorAll('.list-group-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                    
+                    // Удаляем бейдж "Новый"
+                    const newBadge = item.querySelector('.badge.bg-primary');
+                    if (newBadge) {
+                        newBadge.remove();
+                    }
+                    
+                    // Меняем текст кнопки "Отметить как прочитанное"
+                    const markButton = item.querySelector('.mark-read');
+                    if (markButton) {
+                        markButton.innerHTML = '<i class="bi bi-check2-all"></i> Прочитано';
+                        markButton.disabled = true;
+                    }
+                });
+                
+                // Отображаем уведомление об успешной операции
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+                alert.role = 'alert';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle-fill"></i> Все оповещения отмечены как прочитанные
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                const container = document.querySelector('.dashboard-container');
+                container.insertBefore(alert, container.firstChild);
+                
+                // Удаляем уведомление через 3 секунды
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            });
+            
+            // Сохранение настроек оповещений
+            document.getElementById('saveAlertSettings').addEventListener('click', function() {
+                // В реальном приложении здесь был бы код сохранения настроек через API
+                
+                // Отображаем уведомление об успешном сохранении
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+                alert.role = 'alert';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle-fill"></i> Настройки оповещений успешно сохранены
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                const container = this.closest('.dashboard-container');
+                container.appendChild(alert);
+                
+                // Удаляем уведомление через 3 секунды
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html> 

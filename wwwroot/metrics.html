@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метрики - GuardMetrics</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-check"></i> GuardMetrics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Панель управления</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/metrics">Метрики</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alerts">Оповещения</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="/api/docs" class="btn btn-outline-light me-2">API Docs</a>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> Admin
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Профиль</a></li>
+                            <li><a class="dropdown-item" href="/settings"><i class="bi bi-gear"></i> Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Выход</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h1>Метрики системы</h1>
+        <p class="lead text-muted mb-4">Подробная информация о параметрах системы и обнаруженных угрозах</p>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="#process-metrics" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-cpu"></i> Метрики процессов
+                    </a>
+                    <a href="#network-metrics" class="list-group-item list-group-item-action">
+                        <i class="bi bi-diagram-3"></i> Сетевые метрики
+                    </a>
+                    <a href="#security-metrics" class="list-group-item list-group-item-action">
+                        <i class="bi bi-shield"></i> Метрики безопасности
+                    </a>
+                    <a href="#export" class="list-group-item list-group-item-action">
+                        <i class="bi bi-download"></i> Экспорт данных
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div id="process-metrics" class="dashboard-container mb-4">
+                    <h3>Метрики процессов</h3>
+                    <p>Статистика по загрузке CPU, использованию памяти и запущенным процессам</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <canvas id="cpuUsageChart" height="250"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="memoryUsageChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mt-4">Процессы с наибольшим потреблением ресурсов</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Процесс</th>
+                                    <th>PID</th>
+                                    <th>CPU</th>
+                                    <th>Память</th>
+                                    <th>Время работы</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>chrome.exe</td>
+                                    <td>1254</td>
+                                    <td>15.2%</td>
+                                    <td>624 MB</td>
+                                    <td>2ч 15м</td>
+                                </tr>
+                                <tr>
+                                    <td>unknown.exe</td>
+                                    <td>1876</td>
+                                    <td>28.7%</td>
+                                    <td>156 MB</td>
+                                    <td>45м</td>
+                                </tr>
+                                <tr>
+                                    <td>svchost.exe</td>
+                                    <td>652</td>
+                                    <td>5.3%</td>
+                                    <td>98 MB</td>
+                                    <td>12ч 30м</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="network-metrics" class="dashboard-container mb-4">
+                    <h3>Сетевые метрики</h3>
+                    <p>Статистика по сетевым соединениям и передаче данных</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <canvas id="networkTrafficChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Активные соединения</h5>
+                                    <h1 class="display-4 text-primary">56</h1>
+                                    <p class="card-text">Текущие сетевые соединения</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Трафик за сегодня</h5>
+                                    <h1 class="display-4 text-primary">1.45 GB</h1>
+                                    <p class="card-text">Общий объем переданных данных</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="security-metrics" class="dashboard-container mb-4">
+                    <h3>Метрики безопасности</h3>
+                    <p>Статистика по обнаруженным угрозам и проверке безопасности</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <canvas id="threatTypeChart" height="250"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="threatTimelineChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mt-4">Последние обнаруженные угрозы</h4>
+                    <div class="list-group">
+                        <div class="list-group-item list-group-item-danger">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Вредоносный файл: malware.exe</h5>
+                                <small>2 часа назад</small>
+                            </div>
+                            <p class="mb-1">Обнаружено вредоносное ПО типа "троян" через VirusTotal API (12/58 обнаружений)</p>
+                        </div>
+                        <div class="list-group-item list-group-item-warning">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Подозрительное соединение: 185.212.56.52:8080</h5>
+                                <small>4 часа назад</small>
+                            </div>
+                            <p class="mb-1">Соединение с IP-адресом из списка подозрительных</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="export" class="dashboard-container">
+                    <h3>Экспорт данных</h3>
+                    <p>Загрузка отчетов и метрик системы</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Полный отчет</h5>
+                                    <p class="card-text">Все метрики системы за выбранный период</p>
+                                    <a href="#" class="btn btn-primary">Скачать PDF</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Отчет по угрозам</h5>
+                                    <p class="card-text">Информация о всех обнаруженных угрозах</p>
+                                    <a href="#" class="btn btn-primary">Скачать PDF</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Сырые данные</h5>
+                                    <p class="card-text">Экспорт данных в формате CSV</p>
+                                    <a href="#" class="btn btn-primary">Скачать CSV</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="bi bi-shield-check"></i> GuardMetrics</h5>
+                    <p>Интеллектуальная система мониторинга безопасности с использованием ML и VirusTotal API</p>
+                </div>
+                <div class="col-md-2">
+                    <h5>Ссылки</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/">Главная</a></li>
+                        <li><a href="/dashboard">Панель управления</a></li>
+                        <li><a href="/metrics">Метрики</a></li>
+                        <li><a href="/alerts">Оповещения</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h5>Ресурсы</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/docs">Документация</a></li>
+                        <li><a href="/api/docs">API</a></li>
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/support">Поддержка</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Подпишитесь на новости</h5>
+                    <p>Получайте обновления о новых функциях и улучшениях безопасности</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Email">
+                            <button class="btn btn-primary" type="submit">Подписаться</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; 2025 GuardMetrics. Все права защищены.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><a href="/privacy">Политика конфиденциальности</a></li>
+                        <li class="list-inline-item"><a href="/terms">Условия использования</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация графиков
+            // CPU Usage
+            const cpuCtx = document.getElementById('cpuUsageChart').getContext('2d');
+            new Chart(cpuCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+                    datasets: [{
+                        label: 'Использование CPU (%)',
+                        data: [25, 35, 42, 28, 45, 52, 38],
+                        borderColor: '#4e64d0',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Использование CPU'
+                        }
+                    }
+                }
+            });
+            
+            // Memory Usage
+            const memoryCtx = document.getElementById('memoryUsageChart').getContext('2d');
+            new Chart(memoryCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+                    datasets: [{
+                        label: 'Использование памяти (GB)',
+                        data: [2.5, 3.2, 4.1, 3.8, 4.5, 5.2, 4.8],
+                        borderColor: '#30365e',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Использование памяти'
+                        }
+                    }
+                }
+            });
+            
+            // Network Traffic
+            const networkCtx = document.getElementById('networkTrafficChart').getContext('2d');
+            new Chart(networkCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+                    datasets: [
+                        {
+                            label: 'Входящий трафик (MB)',
+                            data: [120, 145, 165, 132, 158, 175, 145],
+                            backgroundColor: '#4e64d0'
+                        },
+                        {
+                            label: 'Исходящий трафик (MB)',
+                            data: [95, 125, 155, 112, 138, 155, 125],
+                            backgroundColor: '#30365e'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Сетевой трафик'
+                        }
+                    }
+                }
+            });
+            
+            // Threat Types
+            const threatTypeCtx = document.getElementById('threatTypeChart').getContext('2d');
+            new Chart(threatTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Вирусы', 'Трояны', 'Шпионское ПО', 'Рекламное ПО', 'Другое'],
+                    datasets: [{
+                        data: [15, 35, 20, 25, 5],
+                        backgroundColor: [
+                            '#dc3545',
+                            '#fd7e14',
+                            '#ffc107',
+                            '#6f42c1',
+                            '#20c997'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Типы угроз'
+                        }
+                    }
+                }
+            });
+            
+            // Threat Timeline
+            const threatTimelineCtx = document.getElementById('threatTimelineChart').getContext('2d');
+            new Chart(threatTimelineCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    datasets: [{
+                        label: 'Обнаружено угроз',
+                        data: [3, 5, 2, 1, 4, 0, 2],
+                        backgroundColor: '#dc3545'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Угрозы по дням'
+                        }
+                    }
+                }
+            });
+            
+            // Обработка кликов по меню
+            document.querySelectorAll('.list-group-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Убираем активный класс со всех элементов
+                    document.querySelectorAll('.list-group-item').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    // Добавляем активный класс на текущий элемент
+                    this.classList.add('active');
+                    
+                    // Плавная прокрутка до якоря
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

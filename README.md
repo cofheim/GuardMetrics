@@ -1,69 +1,106 @@
-# GuardMetrics - Система мониторинга безопасности
+# GuardMetrics
 
-GuardMetrics - это комплексная система для мониторинга безопасности, которая собирает метрики о процессах, сетевой активности и других аспектах системы, анализирует их на наличие аномалий и угроз с помощью ML.NET, а также интегрируется с VirusTotal для проверки подозрительных файлов.
+Система мониторинга безопасности для Windows и Linux, анализирующая процессы, сетевые соединения и системные события безопасности.
 
-## Особенности
+## Возможности
 
-- Сбор и анализ метрик о процессах и сетевой активности
-- Обнаружение аномалий с использованием ML.NET
-- Интеграция с VirusTotal для проверки файлов
-- Уведомления через Telegram при обнаружении угроз
-- Визуализация метрик с использованием Grafana
-- Фоновые задачи с использованием Hangfire
-- JWT аутентификация для API
-
-## Технологии
-
-- ASP.NET Core 8.0
-- Entity Framework Core
-- ML.NET для машинного обучения
-- PostgreSQL для хранения данных
-- Redis для кэширования
-- Grafana для визуализации
-- Docker и Kubernetes для развертывания
-- xUnit для тестирования
+- Мониторинг процессов и их ресурсов
+- Мониторинг сетевых соединений
+- Анализ метрик безопасности
+- Обнаружение аномалий с помощью ML.NET
+- Проверка файлов через VirusTotal API
+- Уведомления о угрозах через Telegram
+- Хранение и визуализация данных с Grafana
 
 ## Требования
 
-- .NET 8.0 SDK
-- Docker и Docker Compose
-- PostgreSQL
-- Redis
-- Grafana
+- .NET 6.0 SDK или новее
+- PostgreSQL (для хранения метрик)
+- Redis (для кэширования и обмена сообщениями)
+- Docker и Docker Compose (опционально, но рекомендуется)
 
-## Быстрый старт
+## Установка
 
-1. Клонировать репозиторий:
+### Без Docker
+
+1. Клонируйте репозиторий и перейдите в его директорию
+
 ```bash
-git clone https://github.com/cofheim/GuardMetrics.git
+git clone https://github.com/yourusername/GuardMetrics.git
 cd GuardMetrics
 ```
 
-2. Настроить переменные окружения:
-```bash
-# Для Windows (PowerShell)
-./run.ps1
+2. Настройте PostgreSQL и создайте базы данных
 
-# Для Linux/macOS
-chmod +x run.sh
-./run.sh
+```bash
+createdb guardmetrics
+createdb guardmetrics_hangfire
 ```
 
-3. Проверить работоспособность:
-   - API Swagger: http://localhost:5000/swagger
-   - Панель Hangfire: http://localhost:5000/hangfire
-   - Grafana: http://localhost:3000 (login: admin, password: admin)
+3. Настройте Redis
+   - Для Windows: установите Redis из [Redis Windows](https://github.com/tporadowski/redis/releases)
+   - Для Linux: `sudo apt install redis-server`
 
-## Архитектура
+4. Настройте переменные окружения или appsettings.json
 
-GuardMetrics состоит из следующих компонентов:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=guardmetrics;Username=postgres;Password=postgres",
+    "Redis": "localhost:6379",
+    "HangfireConnection": "Host=localhost;Database=guardmetrics_hangfire;Username=postgres;Password=postgres"
+  },
+  "JWT": {
+    "Secret": "ваш_секретный_ключ",
+    "ValidIssuer": "http://localhost:5000",
+    "ValidAudience": "http://localhost:4200",
+    "TokenValidityInMinutes": 1440
+  },
+  "VirusTotal": {
+    "ApiKey": "ваш_api_ключ_virustotal",
+    "ApiUrl": "https://www.virustotal.com/vtapi/v2"
+  },
+  "Telegram": {
+    "BotToken": "ваш_токен_telegram_бота",
+    "ChatId": "ваш_chat_id"
+  }
+}
+```
 
-1. **API для сбора метрик** - REST API с JWT аутентификацией
-2. **Анализатор метрик** - Использует ML.NET для обнаружения аномалий
-3. **Интеграция с VirusTotal** - Проверка подозрительных файлов
-4. **Уведомления в Telegram** - Оповещения о угрозах и аномалиях
-5. **Визуализация в Grafana** - Мониторинг и анализ данных
-6. **Фоновые задачи с Hangfire** - Периодический анализ собранных метрик
+5. Выполните миграции базы данных и запустите приложение
+
+```bash
+dotnet ef database update
+dotnet run
+```
+
+### С Docker
+
+1. Клонируйте репозиторий и перейдите в его директорию
+
+```bash
+git clone https://github.com/yourusername/GuardMetrics.git
+cd GuardMetrics
+```
+
+2. Настройте файл .env с вашими параметрами и запустите Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+## Использование
+
+1. Получите токен доступа через `/api/auth/token`
+2. Отправляйте метрики через соответствующие API-эндпоинты
+3. Просматривайте данные в Grafana (порт 3000)
+4. Управляйте фоновыми задачами через Hangfire Dashboard (/hangfire)
+
+## Поддерживаемые агенты для сбора метрик
+
+- Windows Agent (.NET)
+- Linux Agent (Python или .NET)
+- Docker Agent (для контейнеризованных приложений)
 
 ## Лицензия
 
